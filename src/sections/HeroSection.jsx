@@ -3,14 +3,16 @@ import Container from '../components/common/Container';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import ScrollCue from '../components/storytelling/ScrollCue';
+import AuroraHero from '../components/ui/aurora-voice-hero';
 
 export default function HeroSection() {
   return (
     <section 
       id="hero" 
-      className="min-h-screen flex flex-col justify-center pt-36 pb-24 md:pt-44 md:pb-32"
+      className="relative min-h-screen flex flex-col justify-center pt-36 pb-24 md:pt-44 md:pb-32 overflow-hidden"
     >
-      <Container className="flex flex-col items-start">
+      <AuroraHero />
+      <Container className="relative z-10 flex flex-col items-start">
         <div className="mb-6 motion-hero-enter">
           <Badge>AURA TWS • Edition 01</Badge>
         </div>

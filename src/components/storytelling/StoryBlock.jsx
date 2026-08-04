@@ -34,7 +34,7 @@ export default function StoryBlock({
         willChange: 'opacity, transform',
       }}
     >
-      <div className="max-w-lg bg-paper/90 backdrop-blur-md border border-ink/10 rounded-3xl p-8 md:p-10 shadow-sm">
+      <div className="max-w-xl bg-paper/90 backdrop-blur-md border border-ink/10 rounded-3xl p-8 md:p-12 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <Badge>{step} / {totalSteps}</Badge>
           <span className="text-xs font-mono tracking-widest text-ink-muted uppercase">
@@ -42,11 +42,11 @@ export default function StoryBlock({
           </span>
         </div>
         
-        <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-ink">
+        <h3 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-ink leading-tight">
           {title}
         </h3>
         
-        <p className="mt-4 text-ink-muted text-sm md:text-base leading-relaxed">
+        <p className="mt-5 text-ink-muted text-base md:text-lg leading-relaxed">
           {description}
         </p>
 

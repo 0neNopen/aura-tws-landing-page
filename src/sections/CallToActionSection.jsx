@@ -8,8 +8,23 @@ export default function CallToActionSection() {
   const reveal = isInView ? 'is-visible' : '';
 
   return (
-    <section id="cta" className="py-32 bg-paper border-t border-ink/10 text-center relative z-20" ref={ref}>
-      <Container className="flex flex-col items-center">
+    <section id="cta" className="py-32 bg-paper border-t border-ink/10 text-center relative z-20 overflow-hidden" ref={ref}>
+      
+      {/* Subtle Architectural Grid Background */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none opacity-30"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(14, 14, 14, 0.15) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(14, 14, 14, 0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: '4rem 4rem',
+          maskImage: 'radial-gradient(circle at center, black 20%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 20%, transparent 80%)'
+        }}
+      />
+
+      <Container className="flex flex-col items-center relative z-10">
         <h2 className={`font-display text-3xl md:text-5xl font-bold tracking-tight text-ink mb-6 max-w-3xl motion-reveal ${reveal}`}>
           Sound Precision. Redefined.
         </h2>
