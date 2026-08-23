@@ -8,76 +8,11 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     background-color: #F5F3EE;
     color: #0E0E0E;
     font-family: 'Inter', sans-serif;
-  }
-}
-
-/* ============================================
-   Premium Motion System
-   All animations use transform + opacity only
-   for compositor-only rendering at 60 FPS.
-   ============================================ */
-
-@keyframes motionFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes motionBreathe {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
-}
-
-/* Hero entrance — plays once on page load */
-.motion-hero-enter {
-  animation: motionFadeInUp 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Section reveal — triggered by IntersectionObserver */
-.motion-reveal {
-  opacity: 0;
-  transform: translateY(24px);
-}
-
-.motion-reveal.is-visible {
-  animation: motionFadeInUp 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* ScrollCue gentle breathing */
-.motion-breathe {
-  animation: motionBreathe 2.5s ease-in-out infinite;
-}
-
-/* ============================================
-   Reduced Motion — Accessibility
-   Instantly reveals all content without motion
-   ============================================ */
-
-@media (prefers-reduced-motion: reduce) {
-  .motion-hero-enter,
-  .motion-reveal,
-  .motion-reveal.is-visible {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .motion-breathe {
-    animation: none !important;
   }
 }
 

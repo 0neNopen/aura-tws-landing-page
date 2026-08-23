@@ -1,16 +1,37 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
+
+/**
+ * Visual calibration. Tuned for "calm studio flow" rather than oscilloscope
+ * spikiness: low amplitude, long waves, slow drift, gentle mouse response.
+ */
+const CONFIG = {
+  ribbonCount: 4,
+  speed: 0.003,
+  complexity: 0.008,
+  amplitude: 110,
+  mouseIntensity: 0.5,
+  sampleStep: 3, // px between sampled points — smaller = smoother curve
+  lineWidth: 1.5,
+  pulse: true,
+  palette: "Brand Theme",
+};
 
 /**
  * AuroraHero
  *
  * A full-screen generative hero banner that draws animated simplex-noise ribbons
- * on a <canvas> and overlays interactive text and buttons. Supports dark/light
- * themes via global CSS variables and exposes keyboard shortcut (R) to randomize.
+ * on a <canvas> and overlays interactive text and buttons.
+ *
+ * Performance & accessibility guards:
+ *  - The rAF loop runs only while the hero intersects the viewport.
+ *  - Under `prefers-reduced-motion` a single static frame is drawn instead
+ *    of an animation loop.
  */
 export default function AuroraHero() {
   const canvasRef = useRef(null);
   const frameRef = useRef();
-  const [theme, setTheme] = useState("dark");
+  const prefersReducedMotion = useReducedMotion();
 
   // Palettes by name
   const palettes = useMemo(
@@ -25,18 +46,19 @@ export default function AuroraHero() {
     []
   );
 
-  // Animation configuration
+  // Animation configuration — derived from CONFIG so the calibration block
+  // stays the single tuning surface. `ribbons` stays in state so the (R)
+  // shortcut can re-randomize the count.
   const [cfg, setCfg] = useState({
-    ribbons: Array.from({ length: 4 }, () => true),
-    speed: 0.004,
-    complexity: 0.012,
-    amplitude: 250,
-    mouseIntensity: 0.8,
-    pulse: true,
-    palette: "Brand Theme",
+    ribbons: Array.from({ length: CONFIG.ribbonCount }, () => true),
+    speed: CONFIG.speed,
+    complexity: CONFIG.complexity,
+    amplitude: CONFIG.amplitude,
+    mouseIntensity: CONFIG.mouseIntensity,
+    pulse: CONFIG.pulse,
   });
 
-  const colors = palettes[cfg.palette];
+  const colors = palettes[CONFIG.palette];
 
   // Keyboard shortcut: R to randomize ribbon count
   useEffect(() => {
@@ -135,7 +157,7 @@ export default function AuroraHero() {
       };
     })();
 
-    const animate = () => {
+    const drawFrame = () => {
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       time += cfg.speed;
@@ -148,9 +170,9 @@ export default function AuroraHero() {
         grad.addColorStop(0.5, color);
         grad.addColorStop(1, "transparent");
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = CONFIG.lineWidth;
 
-        for (let x = 0; x < canvas.width; x += 5) {
+        for (let x = 0; x < canvas.width; x += CONFIG.sampleStep) {
           const dx = x - mouse.x;
           const dy = canvas.height / 2 - mouse.y;
           const dist = Math.hypot(dx, dy);
@@ -164,17 +186,43 @@ export default function AuroraHero() {
         }
         ctx.stroke();
       });
-
-      frameRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
-    return () => {
+    // The loop only advances while the hero is on screen; scrolling past it
+    // fully stops the rAF chain instead of burning frames on invisible work.
+    const startLoop = () => {
       cancelAnimationFrame(frameRef.current);
+      const loop = () => {
+        drawFrame();
+        frameRef.current = requestAnimationFrame(loop);
+      };
+      loop();
+    };
+    const stopLoop = () => cancelAnimationFrame(frameRef.current);
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (prefersReducedMotion) return; // static frame only
+        if (entry.isIntersecting) startLoop();
+        else stopLoop();
+      },
+      { threshold: 0 }
+    );
+    visibilityObserver.observe(canvas);
+
+    if (prefersReducedMotion) {
+      drawFrame(); // one calm composition, no motion
+    } else {
+      startLoop();
+    }
+
+    return () => {
+      stopLoop();
+      visibilityObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, [cfg, colors]);
+  }, [cfg, colors, prefersReducedMotion]);
 
   return (
     <div className="aurora-showcase">

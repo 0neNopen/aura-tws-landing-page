@@ -1,18 +1,41 @@
 import React, { useRef } from 'react';
+import { useScroll } from 'motion/react';
 import Container from '../components/common/Container';
 import ProductStage from '../components/storytelling/ProductStage';
 import StoryBlock from '../components/storytelling/StoryBlock';
-import { STORY_CHAPTERS } from '../utils/constants';
+import ChapterProgress from '../components/storytelling/ChapterProgress';
+import { STORY_CHAPTERS, PRODUCT_IMAGES } from '../content/story';
 import useFrameSync from '../hooks/useFrameSync';
+import { useImagePreloader } from '../hooks/useImagePreloader';
 
 export default function StorytellingSection() {
   const sectionRef = useRef(null);
   const activeIndex = useFrameSync(sectionRef, STORY_CHAPTERS.length);
+  const { isReady } = useImagePreloader(PRODUCT_IMAGES);
+
+  // Continuous 0–1 progress across the whole chapter run, consumed by the
+  // stage as scroll-linked transforms. Discrete chapter state above stays
+  // with useFrameSync; STORY_CHAPTERS ranges remain the pacing source.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'],
+  });
 
   return (
     <section id="storytelling" ref={sectionRef} className="relative w-full">
-      {/* Background Layer: Sticky Full-Screen Stage — receives only activeIndex */}
-      <ProductStage activeIndex={activeIndex} />
+      {/* Background Layer: Sticky Full-Screen Stage */}
+      <ProductStage
+        activeIndex={activeIndex}
+        scrollProgress={scrollYProgress}
+        ready={isReady}
+      />
+
+      {/* Chapter rail: jump links, visible only while the story is on screen */}
+      <ChapterProgress
+        sectionRef={sectionRef}
+        activeIndex={activeIndex}
+        total={STORY_CHAPTERS.length}
+      />
 
       {/* Foreground Content Layer: Normal Scroll Overlay */}
       <div className="relative z-10 -mt-[100vh]">

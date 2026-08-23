@@ -1,4 +1,4 @@
-import { STORY_CHAPTERS } from './constants';
+import { STORY_CHAPTERS } from '../content/story';
 
 /**
  * Resolves a normalized scroll progress value (0–1) into a discrete frame index.
@@ -35,15 +35,4 @@ export function resolveFrame(progress, totalFrames = STORY_CHAPTERS.length) {
     totalFrames - 1,
     Math.floor(clamped * totalFrames)
   );
-}
-
-/**
- * Creates a resolver function pre-bound with a specific frame count.
- * Useful for future expansion to sequences with different frame counts.
- * 
- * @param {number} totalFrames - Total number of frames in the sequence
- * @returns {(progress: number) => number} Bound resolver function
- */
-export function createFrameResolver(totalFrames) {
-  return (progress) => resolveFrame(progress, totalFrames);
 }
