@@ -81,9 +81,3 @@ Still on the roadmap:
 - Colorway section (Paper White / Ink Black)
 - Unit tests for the scroll-to-frame resolver
 - Lint setup
-
----
-
-## 📄 License
-
-This project is created for learning and portfolio purposes.
