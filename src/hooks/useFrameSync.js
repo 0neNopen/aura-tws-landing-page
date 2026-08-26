@@ -1,58 +1,46 @@
-import { useState, useEffect, useRef } from 'react';
-import useScrollProgress from './useScrollProgress';
+import { useState, useEffect } from 'react';
+import { useScroll } from 'motion/react';
 import { resolveFrame } from '../utils/frameResolver';
 
 /**
- * Orchestrating hook that combines scroll progress detection with frame resolution.
- * 
- * Subscribes to scroll events via useScrollProgress, resolves the current frame
- * index via the Frame Resolver, and only triggers a React state update when
- * the resolved index actually changes — preventing unnecessary re-renders.
- * 
- * @param {React.RefObject<HTMLElement>} containerRef - Ref to the scrollable container
- * @param {number} [totalFrames=9] - Total number of frames in the product sequence
+ * Resolves the discrete active frame index from scroll progress.
+ *
+ * Progress is sourced from Motion's single `useScroll` pipeline (the same
+ * MotionValue consumed by ProductStage's continuous scrub), so the discrete
+ * chapter state and the continuous transforms can never drift apart.
+ * A React state update is triggered only when the resolved index actually
+ * changes — preventing unnecessary re-renders on every scroll tick.
+ *
+ * @param {React.RefObject<HTMLElement>} containerRef - Ref to the section element
+ * @param {number} [totalFrames] - Total frames (defaults to STORY_CHAPTERS.length)
  * @returns {number} activeIndex - Current resolved frame index (0-based)
  */
-export default function useFrameSync(containerRef, totalFrames = 9) {
+export default function useFrameSync(containerRef, totalFrames) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const lastIndexRef = useRef(0);
-  const { getProgress } = useScrollProgress(containerRef);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end end'],
+  });
 
   useEffect(() => {
-    let ticking = false;
+    // Read the current value once and subscribe to subsequent changes.
+    // resolveFrame is pure, so re-checking on each emission is cheap and
+    // state updates fire only when the visible frame genuinely changes.
+    let lastIndex = 0;
 
-    const sync = () => {
-      const progress = getProgress();
+    const sync = (progress) => {
       const index = resolveFrame(progress, totalFrames);
-
-      // Only update React state when the frame actually changes
-      if (index !== lastIndexRef.current) {
-        lastIndexRef.current = index;
+      if (index !== lastIndex) {
+        lastIndex = index;
         setActiveIndex(index);
       }
     };
 
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          sync();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    // Initial sync on mount
-    sync();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, [getProgress, totalFrames]);
+    sync(scrollYProgress.get());
+    const unsubscribe = scrollYProgress.on('change', sync);
+    return unsubscribe;
+  }, [scrollYProgress, totalFrames]);
 
   return activeIndex;
 }

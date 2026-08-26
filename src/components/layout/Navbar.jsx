@@ -3,6 +3,12 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/
 import Container from '../common/Container';
 import Button from '../common/Button';
 import { duration, ease } from '../../motion/tokens';
+import { ORDER_URL } from '../../content/links';
+
+const NAV_THRESHOLDS = {
+  scrolled: 20,   // px scrolled before the bar gains its backdrop
+  reveal: 120,    // below this the bar is always shown on scroll-up intent
+};
 
 const NAV_LINKS = [
   { id: 'storytelling', label: 'Story' },
@@ -21,12 +27,12 @@ export default function Navbar() {
   // while reading and returns the moment intent reverses.
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const previous = scrollY.getPrevious() ?? latest;
-    setScrolled(latest > 20);
+    setScrolled(latest > NAV_THRESHOLDS.scrolled);
     if (menuOpen) {
       setHidden(false);
       return;
     }
-    if (latest < 120) setHidden(false);
+    if (latest < NAV_THRESHOLDS.reveal) setHidden(false);
     else if (latest > previous) setHidden(true);
     else setHidden(false);
   });
@@ -113,7 +119,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <div className="hidden sm:block">
-            <Button>Pre-Order</Button>
+            <Button href={ORDER_URL}>Pre-Order</Button>
           </div>
 
           {/* Mobile menu toggle — 44px+ touch target */}
@@ -167,7 +173,7 @@ export default function Navbar() {
                 </a>
               ))}
               <div className="mt-4 pb-2">
-                <Button className="w-full min-h-[44px]">Pre-Order</Button>
+                <Button href={ORDER_URL} className="w-full min-h-[44px]">Pre-Order</Button>
               </div>
             </Container>
           </motion.nav>

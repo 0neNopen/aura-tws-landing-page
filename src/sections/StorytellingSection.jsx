@@ -11,7 +11,7 @@ import { useImagePreloader } from '../hooks/useImagePreloader';
 export default function StorytellingSection() {
   const sectionRef = useRef(null);
   const activeIndex = useFrameSync(sectionRef, STORY_CHAPTERS.length);
-  const { isReady } = useImagePreloader(PRODUCT_IMAGES);
+  const { isReady, error: preloadError } = useImagePreloader(PRODUCT_IMAGES);
 
   // Continuous 0–1 progress across the whole chapter run, consumed by the
   // stage as scroll-linked transforms. Discrete chapter state above stays
@@ -28,6 +28,7 @@ export default function StorytellingSection() {
         activeIndex={activeIndex}
         scrollProgress={scrollYProgress}
         ready={isReady}
+        preloadError={preloadError}
       />
 
       {/* Chapter rail: jump links, visible only while the story is on screen */}
@@ -38,6 +39,8 @@ export default function StorytellingSection() {
       />
 
       {/* Foreground Content Layer: Normal Scroll Overlay */}
+      {/* -mt-[100vh] overlays the content rail onto the h-screen sticky stage;
+          keep this in sync if the stage height ever changes. */}
       <div className="relative z-10 -mt-[100vh]">
         <Container>
           <div className="flex flex-col space-y-20 py-[15vh]">

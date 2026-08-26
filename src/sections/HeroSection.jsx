@@ -6,6 +6,7 @@ import Button from '../components/common/Button';
 import ScrollCue from '../components/storytelling/ScrollCue';
 import AuroraHero from '../components/ui/aurora-voice-hero';
 import { heroEnter, staggerContainer } from '../motion/tokens';
+import { HERO } from '../content/copy';
 
 export default function HeroSection() {
   return (
@@ -22,33 +23,35 @@ export default function HeroSection() {
           animate="visible"
         >
           <motion.div variants={heroEnter} className="mb-6">
-            <Badge>AURA TWS • Edition 01</Badge>
+            <Badge>{HERO.badge}</Badge>
           </motion.div>
 
           <motion.h1
             variants={heroEnter}
             className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-ink leading-[1.05] max-w-4xl"
           >
-            Architectural Sound Precision.
+            {HERO.title}
           </motion.h1>
 
           <motion.p
             variants={heroEnter}
             className="mt-6 text-lg sm:text-xl text-ink-muted max-w-2xl leading-relaxed"
           >
-            Cinematic audio engineering, wrapped in a hand-milled titanium-aluminum enclosure.
+            {HERO.subtitle}
           </motion.p>
 
           <motion.div
             variants={heroEnter}
             className="mt-12 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto"
           >
-            <Button className="px-8 py-4 text-base">Pre-Order AURA TWS</Button>
+            <Button href={HERO.primaryCta.href} className="px-8 py-4 text-base">
+              {HERO.primaryCta.label}
+            </Button>
             <a
-              href="#storytelling"
+              href={HERO.secondaryCta.href}
               className="px-6 py-4 text-sm font-medium text-ink-muted hover:text-ink text-center rounded-lg transition-colors"
             >
-              Explore Specifications &rarr;
+              {HERO.secondaryCta.label} &rarr;
             </a>
           </motion.div>
 

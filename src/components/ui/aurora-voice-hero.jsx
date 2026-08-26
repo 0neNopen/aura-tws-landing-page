@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
 /**
@@ -33,47 +33,18 @@ export default function AuroraHero() {
   const frameRef = useRef();
   const prefersReducedMotion = useReducedMotion();
 
-  // Palettes by name
+  // Palettes by name — only "Brand Theme" is active; the rest are kept as
+  // documented alternates for future art direction swaps.
   const palettes = useMemo(
     () => ({
       "Brand Theme": ["#B23A2A", "#0E0E0E", "#5A5A57", "#D9D5CA"],
-      "Arctic Frost": ["#00f2ff", "#00a2ff", "#7d00ff"],
-      "Solar Flare": ["#ffbe0b", "#fb5607", "#ff006e"],
-      Nebula: ["#ff00f5", "#a200ff", "#00a2ff"],
-      "Forest Spirit": ["#2dc84d", "#00ff95", "#00b8a2"],
-      Classic: ["#00ff6a", "#058c42", "#023020"],
     }),
     []
   );
 
   // Animation configuration — derived from CONFIG so the calibration block
-  // stays the single tuning surface. `ribbons` stays in state so the (R)
-  // shortcut can re-randomize the count.
-  const [cfg, setCfg] = useState({
-    ribbons: Array.from({ length: CONFIG.ribbonCount }, () => true),
-    speed: CONFIG.speed,
-    complexity: CONFIG.complexity,
-    amplitude: CONFIG.amplitude,
-    mouseIntensity: CONFIG.mouseIntensity,
-    pulse: CONFIG.pulse,
-  });
-
+  // stays the single tuning surface.
   const colors = palettes[CONFIG.palette];
-
-  // Keyboard shortcut: R to randomize ribbon count
-  useEffect(() => {
-    const onKey = (e) => {
-      if (/input|select|textarea/i.test(e.target.tagName)) return;
-      if (e.key.toLowerCase() === "r") {
-        setCfg((c) => ({
-          ...c,
-          ribbons: Array.from({ length: Math.floor(Math.random() * 3 + 3) }, () => true),
-        }));
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
 
   // Core animation loop
   useEffect(() => {
@@ -83,9 +54,27 @@ export default function AuroraHero() {
     let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false };
     let time = 0;
 
+    const drawStaticFrame = () => {
+      // Redraw a single calm composition; used for the reduced-motion path
+      // where there is no rAF loop to repaint after a resize clears the canvas.
+      time = Math.PI * 0.25; // fixed phase so the composition is deterministic
+      drawFrame();
+    };
+
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Scale the backing store by devicePixelRatio so ribbons stay crisp
+      // on HiDPI displays; CSS size remains full-window.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (prefersReducedMotion) {
+        // The animation loop is disabled under reduced motion, so an explicit
+        // redraw is required or the canvas stays blank after any resize.
+        drawStaticFrame();
+      }
     };
     window.addEventListener("resize", resize);
     resize();
@@ -160,9 +149,9 @@ export default function AuroraHero() {
     const drawFrame = () => {
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      time += cfg.speed;
+      time += CONFIG.speed;
 
-      cfg.ribbons.forEach((_, idx) => {
+      for (let idx = 0; idx < CONFIG.ribbonCount; idx++) {
         const color = colors[idx % colors.length];
         ctx.beginPath();
         const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
@@ -177,15 +166,15 @@ export default function AuroraHero() {
           const dy = canvas.height / 2 - mouse.y;
           const dist = Math.hypot(dx, dy);
           const m = mouse.active
-            ? 1 + (1 - Math.min(1, dist / 400)) * cfg.mouseIntensity
+            ? 1 + (1 - Math.min(1, dist / 400)) * CONFIG.mouseIntensity
             : 1;
-          const noise = simplex(x * cfg.complexity * m, idx * 1000 + time);
-          const pulse = cfg.pulse ? Math.sin(time * 0.5 + idx * 1000) * 0.1 + 0.9 : 1;
-          const y = canvas.height / 2 + noise * cfg.amplitude * pulse * m;
+          const noise = simplex(x * CONFIG.complexity * m, idx * 1000 + time);
+          const pulse = CONFIG.pulse ? Math.sin(time * 0.5 + idx * 1000) * 0.1 + 0.9 : 1;
+          const y = canvas.height / 2 + noise * CONFIG.amplitude * pulse * m;
           ctx.lineTo(x, y);
         }
         ctx.stroke();
-      });
+      }
     };
 
     // The loop only advances while the hero is on screen; scrolling past it
@@ -211,7 +200,7 @@ export default function AuroraHero() {
     visibilityObserver.observe(canvas);
 
     if (prefersReducedMotion) {
-      drawFrame(); // one calm composition, no motion
+      drawStaticFrame(); // one calm composition, no motion
     } else {
       startLoop();
     }

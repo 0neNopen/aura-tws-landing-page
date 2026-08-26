@@ -16,7 +16,7 @@ import { duration, ease } from '../../motion/tokens';
  * Under `prefers-reduced-motion` the continuous layer is dropped entirely
  * and the crossfade collapses to an instant swap.
  */
-export default function ProductStage({ activeIndex, scrollProgress, ready = true }) {
+export default function ProductStage({ activeIndex, scrollProgress, ready = true, preloadError = null }) {
   const prefersReducedMotion = useReducedMotion();
 
   // Ensure index remains strictly within valid bounds [0, PRODUCT_IMAGES.length - 1]
@@ -45,6 +45,21 @@ export default function ProductStage({ activeIndex, scrollProgress, ready = true
         />
 
         {/* Image Container: fade-in once preloaded, natural multiply blending */}
+        {preloadError && !ready ? (
+          /* Graceful degradation: at least one asset failed and the sequence
+             never became ready — surface it instead of an empty stage. */
+          <div
+            role="status"
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
+          >
+            <p className="font-display text-xl md:text-2xl text-ink mb-3">
+              AURA TWS — Visual Sequence Unavailable
+            </p>
+            <p className="text-sm text-ink-muted max-w-md">
+              Some product imagery failed to load. Please check your connection and refresh.
+            </p>
+          </div>
+        ) : (
         <motion.div
           className="absolute inset-0 w-full h-full z-10 mix-blend-multiply"
           initial={{ opacity: 0 }}
@@ -79,6 +94,7 @@ export default function ProductStage({ activeIndex, scrollProgress, ready = true
             );
           })}
         </motion.div>
+        )}
       </div>
     </div>
   );

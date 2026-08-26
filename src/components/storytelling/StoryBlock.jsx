@@ -44,7 +44,7 @@ function MetricValue({ value, active }) {
     }
     const decimals = (num.split('.')[1] || '').length;
     const controls = animate(0, target, {
-      duration: 0.9,
+      duration: duration.hero,
       ease: ease.outExpo,
       onUpdate: (v) => {
         setDisplay(prefix + v.toFixed(decimals) + value.slice(prefix.length + num.length));

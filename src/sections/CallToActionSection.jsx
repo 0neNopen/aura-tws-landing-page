@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import Container from '../components/common/Container';
 import Button from '../components/common/Button';
 import { fadeUp, staggerContainer } from '../motion/tokens';
+import { CTA_SECTION } from '../content/copy';
 
 export default function CallToActionSection() {
   const sectionRef = useRef(null);
@@ -43,16 +44,18 @@ export default function CallToActionSection() {
             variants={fadeUp}
             className="font-display text-3xl md:text-5xl font-bold tracking-tight text-ink mb-6 max-w-3xl"
           >
-            Sound Precision. Redefined.
+            {CTA_SECTION.title}
           </motion.h2>
           <motion.p
             variants={fadeUp}
             className="text-ink-muted text-base md:text-lg max-w-xl mb-12 leading-relaxed"
           >
-            Available in limited batch production. Reserve your pair today in Paper White or Ink Black.
+            {CTA_SECTION.body}
           </motion.p>
           <motion.div variants={fadeUp}>
-            <Button className="px-10 py-5 text-lg">Order AURA TWS — $299</Button>
+            <Button href={CTA_SECTION.cta.href} className="px-10 py-5 text-lg">
+              {CTA_SECTION.cta.label}
+            </Button>
           </motion.div>
         </motion.div>
       </Container>
