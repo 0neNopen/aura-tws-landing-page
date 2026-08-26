@@ -211,7 +211,7 @@ export default function AuroraHero() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, [cfg, colors, prefersReducedMotion]);
+  }, [colors, prefersReducedMotion]);
 
   return (
     <div className="aurora-showcase">
